@@ -1,0 +1,110 @@
+apply plugin: "java"
+apply plugin: "maven"
+apply plugin: "signing"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = "nz.co.lolnet"
+archivesBaseName = "RedisVelocity-API"
+version = "1.0.0-DEV"
+
+configurations {
+    provided {
+        compile.extendsFrom(provided)
+    }
+
+    build.dependsOn("uploadArchives")
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+}
+
+jar {
+    from {
+        (configurations.compile - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+processResources {
+    from("LICENSE")
+    rename("LICENSE", "LICENSE-" + archivesBaseName)
+}
+
+uploadArchives {
+    repositories {
+        if (project.hasProperty("maven.url")) {
+            mavenDeployer {
+                project.logger.lifecycle("Uploading Archives")
+                repository(url: project.property("maven.url"))
+
+                pom {
+                    groupId = project.group
+                    artifactId = project.archivesBaseName
+                    version = project.version
+                    project {
+                        name = project.archivesBaseName
+                        packaging = "jar"
+
+                        scm {
+                            url = "https://github.com/lolnetnz/ServerManager"
+                            connection = "scm:git:https://github.com/lolnetnz/ServerManager.git"
+                            developerConnection = "scm:git:git@github.com:lolnetnz/ServerManager.git"
+                        }
+
+                        issueManagement {
+                            system = "GitHub Issues"
+                            url = "https://github.com/lolnetnz/ServerManager/issues"
+                        }
+
+                        licenses {
+                            license {
+                                name = "Apache License 2.0"
+                                url = "https://opensource.org/licenses/Apache-2.0"
+                                distribution = "repo"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+task signJar {
+    doFirst {
+        if (!project.hasProperty("signing.keyStorePath") || !project.hasProperty("signing.secretKeyRingFile")) {
+            project.logger.warn("========== [WARNING] ==========")
+            project.logger.warn("")
+            project.logger.warn("   This build is not signed!   ")
+            project.logger.warn("")
+            project.logger.warn("========== [WARNING] ==========")
+            throw new StopExecutionException()
+        }
+    }
+
+    doLast {
+        jar.outputs.files.each {
+            ant.signjar(
+                jar: it,
+                alias: project.property("signing.alias"),
+                storepass: project.property("signing.keyStorePassword"),
+                keystore: project.property("signing.keyStorePath"),
+                keypass: project.property("signing.keyStorePassword"),
+                preservelastmodified: project.property("signing.preserveLastModified"),
+                tsaurl: project.property("signing.timestampAuthority"),
+                digestalg: project.property("signing.digestAlgorithm")
+            )
+            project.logger.lifecycle("JAR Signed: " + it.name)
+
+            signing.sign(it)
+            project.logger.lifecycle("PGP Signed: " + it.name)
+        }
+    }
+}

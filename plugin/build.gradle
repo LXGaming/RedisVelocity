@@ -1,0 +1,97 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath("com.github.jengelman.gradle.plugins:shadow:2.0.4")
+    }
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "java"
+apply plugin: "signing"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = "nz.co.lolnet"
+archivesBaseName = "RedisVelocity-Plugin"
+version = "1.0.0-DEV"
+
+configurations {
+    provided {
+        compile.extendsFrom(provided)
+    }
+
+    build.dependsOn("signJar")
+    jar.enabled = false
+    jar.dependsOn("shadowJar")
+}
+
+repositories {
+    jcenter()
+    maven {
+        name = "velocity"
+        url = "https://repo.velocitypowered.com/snapshots"
+    }
+}
+
+dependencies {
+    shadow(project(path: ":api"))
+    provided("com.velocitypowered:velocity-api:1.0-SNAPSHOT")
+    shadow("redis.clients:jedis:2.9.0")
+}
+
+shadowJar {
+    classifier = null
+    configurations = [project.configurations.shadow]
+    relocate("org.apache.commons.pool2", "nz.co.lolnet.redisvelocity.lib.commonspool2")
+    relocate("redis.clients.jedis", "nz.co.lolnet.redisvelocity.lib.jedis")
+    relocate("redis.clients.util", "nz.co.lolnet.redisvelocity.lib.jedisutil")
+}
+
+jar {
+    from {
+        (configurations.compile - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+processResources {
+    from("LICENSE")
+    rename("LICENSE", "LICENSE-" + archivesBaseName)
+}
+
+task signJar {
+    doFirst {
+        if (!project.hasProperty("signing.keyStorePath") || !project.hasProperty("signing.secretKeyRingFile")) {
+            project.logger.warn("========== [WARNING] ==========")
+            project.logger.warn("")
+            project.logger.warn("   This build is not signed!   ")
+            project.logger.warn("")
+            project.logger.warn("========== [WARNING] ==========")
+            throw new StopExecutionException()
+        }
+    }
+
+    doLast {
+        jar.outputs.files.each {
+            ant.signjar(
+                jar: it,
+                alias: project.property("signing.alias"),
+                storepass: project.property("signing.keyStorePassword"),
+                keystore: project.property("signing.keyStorePath"),
+                keypass: project.property("signing.keyStorePassword"),
+                preservelastmodified: project.property("signing.preserveLastModified"),
+                tsaurl: project.property("signing.timestampAuthority"),
+                digestalg: project.property("signing.digestAlgorithm")
+            )
+            project.logger.lifecycle("JAR Signed: " + it.name)
+
+            signing.sign(it)
+            project.logger.lifecycle("PGP Signed: " + it.name)
+        }
+    }
+}
