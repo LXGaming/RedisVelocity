@@ -24,6 +24,16 @@ repositories {
 dependencies {
 }
 
+task javadocJar(type: Jar) {
+    classifier = "javadoc"
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = "sources"
+    from sourceSets.main.allSource
+}
+
 jar {
     from {
         (configurations.compile - configurations.provided).collect {
@@ -35,6 +45,11 @@ jar {
 processResources {
     from("LICENSE")
     rename("LICENSE", "LICENSE-" + archivesBaseName)
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
 
 uploadArchives {
