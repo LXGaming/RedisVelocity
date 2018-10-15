@@ -5,6 +5,7 @@
 
 ### API
 Repository: `https://api.lolnet.co.nz/maven`
+
 Dependency: `nz.co.lolnet:redisvelocity-api:1.0.0-DEV`
 
 ## License
