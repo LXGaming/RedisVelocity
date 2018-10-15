@@ -16,7 +16,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group = "nz.co.lolnet"
-archivesBaseName = "RedisVelocity-Plugin"
+archivesBaseName = "redisvelocity-plugin"
 version = "1.0.0-DEV"
 
 configurations {
