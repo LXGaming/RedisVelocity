@@ -87,7 +87,7 @@ public class Configuration {
                 VelocityPlugin.getInstance().getLogger().info("Successfully created file {}.", file.getName());
             }
             
-            getTomlWriter().write(getConfig(), file);
+            getTomlWriter().write(object, file);
             return true;
         } catch (IOException | OutOfMemoryError | RuntimeException ex) {
             VelocityPlugin.getInstance().getLogger().error("Encountered an error processing {}::saveObject", getClass().getSimpleName(), ex);
