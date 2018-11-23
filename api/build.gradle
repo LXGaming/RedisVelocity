@@ -70,14 +70,14 @@ uploadArchives {
                         packaging = "jar"
 
                         scm {
-                            url = "https://github.com/lolnetnz/ServerManager"
-                            connection = "scm:git:https://github.com/lolnetnz/ServerManager.git"
-                            developerConnection = "scm:git:git@github.com:lolnetnz/ServerManager.git"
+                            url = "https://github.com/lolnetnz/RedisVelocity"
+                            connection = "scm:git:https://github.com/lolnetnz/RedisVelocity.git"
+                            developerConnection = "scm:git:git@github.com:lolnetnz/RedisVelocity.git"
                         }
 
                         issueManagement {
                             system = "GitHub Issues"
-                            url = "https://github.com/lolnetnz/ServerManager/issues"
+                            url = "https://github.com/lolnetnz/RedisVelocity/issues"
                         }
 
                         licenses {
