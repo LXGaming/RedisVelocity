@@ -39,6 +39,7 @@ repositories {
 
 dependencies {
     shadow(project(path: ":api"))
+    annotationProcessor("com.velocitypowered:velocity-api:1.0-SNAPSHOT")
     provided("com.velocitypowered:velocity-api:1.0-SNAPSHOT")
     shadow("redis.clients:jedis:2.9.0")
 }
