@@ -20,6 +20,7 @@ import nz.co.lolnet.redisvelocity.api.RedisVelocity;
 import nz.co.lolnet.redisvelocity.api.util.Reference;
 import nz.co.lolnet.redisvelocity.plugin.configuration.Config;
 import nz.co.lolnet.redisvelocity.plugin.util.Toolbox;
+import redis.clients.jedis.JedisPool;
 
 import java.util.Optional;
 
@@ -62,6 +63,11 @@ public final class RedisVelocityImpl extends RedisVelocity {
         }
         
         VelocityPlugin.getInstance().getRedisService().getRedisListener().unsubscribe(channels);
+    }
+    
+    @Override
+    public JedisPool getJedisPool() {
+        return VelocityPlugin.getInstance().getRedisService().getJedisPool();
     }
     
     @Override

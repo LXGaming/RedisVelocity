@@ -17,6 +17,7 @@
 package nz.co.lolnet.redisvelocity.api;
 
 import nz.co.lolnet.redisvelocity.api.util.Reference;
+import redis.clients.jedis.JedisPool;
 
 import java.util.Optional;
 
@@ -48,6 +49,11 @@ public abstract class RedisVelocity {
      * @throws IllegalArgumentException If any of the provided channels use the internal namespace
      */
     public abstract void unregisterChannels(String... channels) throws IllegalArgumentException;
+    
+    /**
+     * @return The JedisPool instance
+     */
+    public abstract JedisPool getJedisPool();
     
     /**
      * @return The proxy id, or {@link Optional#empty()} if unknown
