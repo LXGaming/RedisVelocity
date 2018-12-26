@@ -10,6 +10,7 @@ buildscript {
 
 apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "java"
+apply plugin: "maven"
 apply plugin: "signing"
 
 sourceCompatibility = 1.8
@@ -24,6 +25,7 @@ configurations {
         compile.extendsFrom(provided)
     }
 
+    build.dependsOn("uploadArchives")
     jar.enabled = false
     jar.dependsOn("shadowJar")
 }
@@ -40,6 +42,16 @@ dependencies {
     shadow(project(path: ":api"))
     annotationProcessor("com.velocitypowered:velocity-api:1.0-SNAPSHOT")
     provided("com.velocitypowered:velocity-api:1.0-SNAPSHOT")
+}
+
+task javadocJar(type: Jar) {
+    classifier = "javadoc"
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = "sources"
+    from sourceSets.main.allSource
 }
 
 shadowJar {
@@ -63,6 +75,51 @@ jar {
 processResources {
     from("LICENSE")
     rename("LICENSE", "LICENSE-" + archivesBaseName)
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+uploadArchives {
+    repositories {
+        if (project.hasProperty("maven.url")) {
+            mavenDeployer {
+                project.logger.lifecycle("Uploading Archives")
+                repository(url: project.property("maven.url"))
+
+                pom {
+                    groupId = project.group
+                    artifactId = project.archivesBaseName
+                    version = project.version
+                    project {
+                        name = project.archivesBaseName
+                        packaging = "jar"
+
+                        scm {
+                            url = "https://github.com/lolnetnz/RedisVelocity"
+                            connection = "scm:git:https://github.com/lolnetnz/RedisVelocity.git"
+                            developerConnection = "scm:git:git@github.com:lolnetnz/RedisVelocity.git"
+                        }
+
+                        issueManagement {
+                            system = "GitHub Issues"
+                            url = "https://github.com/lolnetnz/RedisVelocity/issues"
+                        }
+
+                        licenses {
+                            license {
+                                name = "Apache License 2.0"
+                                url = "https://opensource.org/licenses/Apache-2.0"
+                                distribution = "repo"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 task signJar {

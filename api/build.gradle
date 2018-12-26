@@ -1,5 +1,4 @@
 apply plugin: "java"
-apply plugin: "java-library"
 apply plugin: "maven"
 apply plugin: "signing"
 
@@ -23,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    api("redis.clients:jedis:2.9.0")
+    provided("redis.clients:jedis:2.9.0")
 }
 
 task javadocJar(type: Jar) {
