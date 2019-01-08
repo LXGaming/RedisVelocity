@@ -31,17 +31,17 @@ public abstract class AbstractService implements Runnable {
         try {
             executeService();
         } catch (Exception ex) {
-            VelocityPlugin.getInstance().getLogger().error("Encountered an error processing {}::run", getClass().getSimpleName(), ex);
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while executing {}", getClass().getSimpleName(), ex);
             getScheduledTask().cancel();
         }
     }
     
     public abstract boolean prepareService();
     
-    public abstract void executeService();
+    public abstract void executeService() throws Exception;
     
     public boolean isRunning() {
-        return getScheduledTask().status() == TaskStatus.SCHEDULED;
+        return getScheduledTask() != null && getScheduledTask().status() == TaskStatus.SCHEDULED;
     }
     
     public final long getDelay() {

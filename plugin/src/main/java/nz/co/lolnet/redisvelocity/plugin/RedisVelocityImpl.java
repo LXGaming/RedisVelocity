@@ -46,7 +46,7 @@ public final class RedisVelocityImpl extends RedisVelocity {
             }
         }
         
-        VelocityPlugin.getInstance().getRedisService().getRedisListener().subscribe(channels);
+        VelocityPlugin.getInstance().getRedisService().subscribe(channels);
     }
     
     @Override
@@ -61,7 +61,7 @@ public final class RedisVelocityImpl extends RedisVelocity {
             }
         }
         
-        VelocityPlugin.getInstance().getRedisService().getRedisListener().unsubscribe(channels);
+        VelocityPlugin.getInstance().getRedisService().unsubscribe(channels);
     }
     
     @Override

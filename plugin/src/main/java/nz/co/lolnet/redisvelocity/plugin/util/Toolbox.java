@@ -16,8 +16,8 @@
 
 package nz.co.lolnet.redisvelocity.plugin.util;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +52,45 @@ public class Toolbox {
         return !isBlank(charSequence);
     }
     
+    public static String getTimeString(long time) {
+        time = Math.abs(time);
+        long second = time / 1000;
+        long minute = second / 60;
+        long hour = minute / 60;
+        long day = hour / 24;
+        
+        StringBuilder stringBuilder = new StringBuilder();
+        appendUnit(stringBuilder, day, "day", "days");
+        appendUnit(stringBuilder, hour % 24, "hour", "hours");
+        appendUnit(stringBuilder, minute % 60, "minute", "minutes");
+        appendUnit(stringBuilder, second % 60, "second", "seconds");
+        
+        if (stringBuilder.length() == 0) {
+            stringBuilder.append("a moment");
+        }
+        
+        return stringBuilder.toString();
+    }
+    
+    public static boolean appendUnit(StringBuilder stringBuilder, long unit, String singular, String plural) {
+        if (unit > 0) {
+            if (stringBuilder.length() > 0) {
+                stringBuilder.append(", ");
+            }
+            
+            stringBuilder.append(unit).append(" ");
+            if (unit == 1) {
+                stringBuilder.append(singular);
+            } else {
+                stringBuilder.append(plural);
+            }
+            
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean containsIgnoreCase(String string, String searchString) {
         if (string == null || searchString == null) {
             return false;
@@ -68,9 +107,12 @@ public class Toolbox {
         return false;
     }
     
-    @SafeVarargs
-    public static <E> ArrayList<E> newArrayList(E... elements) {
-        return Stream.of(elements).collect(Collectors.toCollection(ArrayList::new));
+    public static <T> Optional<T> newInstance(Class<? extends T> typeOfT) {
+        try {
+            return Optional.of(typeOfT.newInstance());
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
     }
     
     @SafeVarargs

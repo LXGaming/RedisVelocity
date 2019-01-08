@@ -21,6 +21,11 @@ public class RedisCategory {
     private String host = "127.0.0.1";
     private int port = 6379;
     private String password = "";
+    private boolean autoReconnect = true;
+    private int maximumReconnectDelay = 300;
+    private int maximumPoolSize = 10;
+    private int maximumIdle = 5;
+    private int minimumIdle = 1;
     
     public String getHost() {
         return host;
@@ -32,5 +37,25 @@ public class RedisCategory {
     
     public String getPassword() {
         return password;
+    }
+    
+    public boolean isAutoReconnect() {
+        return autoReconnect;
+    }
+    
+    public int getMaximumReconnectDelay() {
+        return maximumReconnectDelay;
+    }
+    
+    public int getMaximumPoolSize() {
+        return maximumPoolSize;
+    }
+    
+    public int getMaximumIdle() {
+        return maximumIdle;
+    }
+    
+    public int getMinimumIdle() {
+        return minimumIdle;
     }
 }

@@ -16,91 +16,94 @@
 
 package nz.co.lolnet.redisvelocity.plugin.configuration;
 
-import com.google.gson.JsonParseException;
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
 import nz.co.lolnet.redisvelocity.plugin.VelocityPlugin;
 import nz.co.lolnet.redisvelocity.plugin.util.Toolbox;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 
 public class Configuration {
     
-    private final Toml toml = new Toml();
-    private final TomlWriter tomlWriter = new TomlWriter();
-    private Config config = new Config();
+    private static final Toml TOML = new Toml();
+    private static final TomlWriter TOML_WRITER = new TomlWriter();
+    private Config config;
     
-    public void loadConfiguration() {
-        this.config = (Config) loadObject(getConfig(), "config.toml");
-        VelocityPlugin.getInstance().getLogger().info("Loaded configuration files.");
+    public boolean loadConfiguration() {
+        Optional<Config> config = loadFile(VelocityPlugin.getInstance().getPath().resolve("config.toml"), Config.class);
+        if (config.isPresent()) {
+            this.config = config.get();
+            return true;
+        }
+        
+        return false;
     }
     
-    public void saveConfiguration() {
-        saveObject(getConfig(), "config.toml");
-        VelocityPlugin.getInstance().getLogger().info("Saved configuration files.");
+    public boolean saveConfiguration() {
+        return saveFile(VelocityPlugin.getInstance().getPath().resolve("config.toml"), config);
     }
     
-    private Object loadObject(Object object, String name) {
-        try {
-            if (object == null || Toolbox.isBlank(name)) {
-                throw new IllegalArgumentException("Supplied arguments are null!");
-            }
-            
-            File file = VelocityPlugin.getInstance().getPath().resolve(name).toFile();
-            if (!file.exists() && !saveObject(object, name)) {
-                return object;
-            }
-            
-            String string = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
-            if (Toolbox.isBlank(string)) {
-                throw new IOException("File is blank!");
-            }
-            
-            Object data = getToml().read(string).to(object.getClass());
-            if (data == null) {
-                throw new JsonParseException("Failed to parse File!");
-            }
-            
-            return data;
-        } catch (IOException | OutOfMemoryError | RuntimeException ex) {
-            VelocityPlugin.getInstance().getLogger().error("Encountered an error processing {}::loadObject", getClass().getSimpleName(), ex);
-            return object;
+    public static <T> Optional<T> loadFile(Path path, Class<T> typeOfT) {
+        if (Files.exists(path)) {
+            return deserializeFile(path, typeOfT);
+        }
+        
+        return Toolbox.newInstance(typeOfT).filter(object -> saveFile(path, object));
+    }
+    
+    public static boolean saveFile(Path path, Object object) {
+        if (Files.exists(path) || createFile(path)) {
+            return serializeFile(path, object);
+        }
+        
+        return false;
+    }
+    
+    public static <T> Optional<T> deserializeFile(Path path, Class<T> typeOfT) {
+        try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            return Optional.ofNullable(getToml().read(reader).to(typeOfT));
+        } catch (Exception ex) {
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while deserializing {}", path, ex);
+            return Optional.empty();
         }
     }
     
-    private boolean saveObject(Object object, String name) {
-        try {
-            if (object == null || Toolbox.isBlank(name)) {
-                throw new IllegalArgumentException("Supplied arguments are null!");
-            }
-            
-            File file = VelocityPlugin.getInstance().getPath().resolve(name).toFile();
-            File parentFile = file.getParentFile();
-            if (parentFile != null && !parentFile.exists() && parentFile.mkdirs()) {
-                VelocityPlugin.getInstance().getLogger().info("Successfully created directory {}.", parentFile.getName());
-            }
-            
-            if (!file.exists() && file.createNewFile()) {
-                VelocityPlugin.getInstance().getLogger().info("Successfully created file {}.", file.getName());
-            }
-            
-            getTomlWriter().write(object, file);
+    public static boolean serializeFile(Path path, Object object) {
+        try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+            getTomlWriter().write(object, writer);
             return true;
-        } catch (IOException | OutOfMemoryError | RuntimeException ex) {
-            VelocityPlugin.getInstance().getLogger().error("Encountered an error processing {}::saveObject", getClass().getSimpleName(), ex);
+        } catch (Exception ex) {
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while serializing {}", path, ex);
             return false;
         }
     }
     
-    private Toml getToml() {
-        return toml;
+    private static boolean createFile(Path path) {
+        try {
+            if (path.getParent() != null) {
+                Files.createDirectories(path.getParent());
+            }
+            
+            Files.createFile(path);
+            return true;
+        } catch (Exception ex) {
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while creating {}", path, ex);
+            return false;
+        }
     }
     
-    private TomlWriter getTomlWriter() {
-        return tomlWriter;
+    public static Toml getToml() {
+        return TOML;
+    }
+    
+    public static TomlWriter getTomlWriter() {
+        return TOML_WRITER;
     }
     
     public Config getConfig() {

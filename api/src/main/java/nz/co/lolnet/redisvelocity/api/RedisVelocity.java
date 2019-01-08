@@ -32,8 +32,9 @@ public abstract class RedisVelocity {
      * @param channel The channel to send this message
      * @param message The message to send
      * @throws IllegalArgumentException If the provided channel is blank
+     * @throws IllegalStateException    If Redis is currently unavailable
      */
-    public abstract void sendMessage(String channel, String message) throws IllegalArgumentException;
+    public abstract void sendMessage(String channel, String message) throws IllegalArgumentException, IllegalStateException;
     
     /**
      * @param channels The channels to register

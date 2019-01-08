@@ -22,11 +22,13 @@ import nz.co.lolnet.redisvelocity.plugin.VelocityPlugin;
 import nz.co.lolnet.redisvelocity.plugin.configuration.Config;
 import nz.co.lolnet.redisvelocity.plugin.configuration.category.RedisCategory;
 import nz.co.lolnet.redisvelocity.plugin.listener.RedisListener;
+import nz.co.lolnet.redisvelocity.plugin.manager.ServiceManager;
 import nz.co.lolnet.redisvelocity.plugin.util.Toolbox;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.Set;
 
@@ -35,7 +37,10 @@ public class RedisService extends AbstractService {
     private final Set<String> channels = Toolbox.newHashSet();
     private final RedisListener redisListener = new RedisListener();
     private JedisPool jedisPool;
+    private int maximumReconnectDelay;
+    private int reconnectTimeout = 2;
     
+    @Override
     public boolean prepareService() {
         getChannels().add(Reference.ID + "-all");
         getChannels().add(Reference.ID + "-data");
@@ -46,22 +51,89 @@ public class RedisService extends AbstractService {
             return false;
         }
         
+        if (redisCategory.isAutoReconnect()) {
+            maximumReconnectDelay = redisCategory.getMaximumReconnectDelay();
+        }
+        
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(10);
+        jedisPoolConfig.setMaxTotal(redisCategory.getMaximumPoolSize());
+        jedisPoolConfig.setMaxIdle(redisCategory.getMaximumIdle());
+        jedisPoolConfig.setMinIdle(redisCategory.getMinimumIdle());
         this.jedisPool = new JedisPool(jedisPoolConfig, redisCategory.getHost(), redisCategory.getPort(), Protocol.DEFAULT_TIMEOUT, redisCategory.getPassword());
         return true;
     }
     
-    public void executeService() {
+    @Override
+    public void executeService() throws Exception {
         try (Jedis jedis = getJedisPool().getResource()) {
             RedisVelocity.getInstance().getProxyChannel().ifPresent(jedis::clientSetname);
+            VelocityPlugin.getInstance().getLogger().info("Connected to Redis");
             jedis.subscribe(getRedisListener(), getChannels().toArray(new String[0]));
+        } catch (JedisConnectionException ex) {
+            VelocityPlugin.getInstance().getLogger().warn("Got disconnected from Redis...");
+            if (reconnect()) {
+                ServiceManager.schedule(this);
+            }
         }
     }
     
-    public void publish(String channel, String message) {
+    private boolean reconnect() throws InterruptedException {
+        if (maximumReconnectDelay <= 0) {
+            return false;
+        }
+        
+        VelocityPlugin.getInstance().getLogger().warn("Attempting to reconnect in {}", Toolbox.getTimeString(reconnectTimeout * 1000));
+        while (!getJedisPool().isClosed()) {
+            Thread.sleep(reconnectTimeout * 1000);
+            VelocityPlugin.getInstance().getLogger().warn("Attempting to reconnect!");
+            
+            try (Jedis jedis = getJedisPool().getResource()) {
+                reconnectTimeout = 2;
+                return true;
+            } catch (JedisConnectionException ex) {
+                reconnectTimeout = Math.min(reconnectTimeout << 1, maximumReconnectDelay);
+                VelocityPlugin.getInstance().getLogger().warn("Reconnect failed! Next attempt in {}", Toolbox.getTimeString(reconnectTimeout * 1000));
+            }
+        }
+        
+        return false;
+    }
+    
+    public void shutdown() {
+        if (getRedisListener() != null && getRedisListener().isSubscribed()) {
+            getRedisListener().unsubscribe();
+        }
+        
+        if (getJedisPool() != null && !getJedisPool().isClosed()) {
+            getJedisPool().close();
+        }
+        
+        if (isRunning()) {
+            getScheduledTask().cancel();
+        }
+    }
+    
+    public void publish(String channel, String message) throws IllegalStateException {
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.publish(channel, message);
+        } catch (JedisConnectionException ex) {
+            throw new IllegalStateException("Encountered a JedisConnection error while attempting to publish");
+        }
+    }
+    
+    public void subscribe(String... channels) {
+        try {
+            getChannels().addAll(Toolbox.newHashSet(channels));
+            getRedisListener().subscribe(channels);
+        } catch (JedisConnectionException ex) {
+        }
+    }
+    
+    public void unsubscribe(String... channels) {
+        try {
+            getChannels().removeAll(Toolbox.newHashSet(channels));
+            getRedisListener().unsubscribe(channels);
+        } catch (JedisConnectionException ex) {
         }
     }
     
