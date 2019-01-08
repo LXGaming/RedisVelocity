@@ -20,7 +20,6 @@ import nz.co.lolnet.redisvelocity.api.RedisVelocity;
 import nz.co.lolnet.redisvelocity.api.util.Reference;
 import nz.co.lolnet.redisvelocity.plugin.VelocityPlugin;
 import nz.co.lolnet.redisvelocity.plugin.configuration.Config;
-import nz.co.lolnet.redisvelocity.plugin.configuration.category.RedisCategory;
 import nz.co.lolnet.redisvelocity.plugin.listener.RedisListener;
 import nz.co.lolnet.redisvelocity.plugin.manager.ServiceManager;
 import nz.co.lolnet.redisvelocity.plugin.util.Toolbox;
@@ -46,21 +45,23 @@ public class RedisService extends AbstractService {
         getChannels().add(Reference.ID + "-data");
         RedisVelocity.getInstance().getProxyChannel().ifPresent(getChannels()::add);
         
-        RedisCategory redisCategory = VelocityPlugin.getInstance().getConfig().map(Config::getRedis).orElse(null);
-        if (redisCategory == null) {
-            return false;
-        }
+        VelocityPlugin.getInstance().getConfig().map(Config::getRedis).ifPresent(redis -> {
+            if (redis.isAutoReconnect()) {
+                maximumReconnectDelay = redis.getMaximumReconnectDelay();
+            } else {
+                maximumReconnectDelay = 0;
+            }
+            
+            if (getJedisPool() == null) {
+                JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+                jedisPoolConfig.setMaxTotal(redis.getMaximumPoolSize());
+                jedisPoolConfig.setMaxIdle(redis.getMaximumIdle());
+                jedisPoolConfig.setMinIdle(redis.getMinimumIdle());
+                this.jedisPool = new JedisPool(jedisPoolConfig, redis.getHost(), redis.getPort(), Protocol.DEFAULT_TIMEOUT, redis.getPassword());
+            }
+        });
         
-        if (redisCategory.isAutoReconnect()) {
-            maximumReconnectDelay = redisCategory.getMaximumReconnectDelay();
-        }
-        
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(redisCategory.getMaximumPoolSize());
-        jedisPoolConfig.setMaxIdle(redisCategory.getMaximumIdle());
-        jedisPoolConfig.setMinIdle(redisCategory.getMinimumIdle());
-        this.jedisPool = new JedisPool(jedisPoolConfig, redisCategory.getHost(), redisCategory.getPort(), Protocol.DEFAULT_TIMEOUT, redisCategory.getPassword());
-        return true;
+        return getJedisPool() != null && !getJedisPool().isClosed();
     }
     
     @Override
