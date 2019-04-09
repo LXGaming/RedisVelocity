@@ -40,7 +40,7 @@ public class RedisService extends AbstractService {
     private int reconnectTimeout = 2;
     
     @Override
-    public boolean prepareService() {
+    public boolean prepare() {
         getChannels().add(Reference.ID + "-all");
         getChannels().add(Reference.ID + "-data");
         RedisVelocity.getInstance().getProxyChannel().ifPresent(getChannels()::add);
@@ -65,7 +65,7 @@ public class RedisService extends AbstractService {
     }
     
     @Override
-    public void executeService() throws Exception {
+    public void execute() throws Exception {
         try (Jedis jedis = getJedisPool().getResource()) {
             RedisVelocity.getInstance().getProxyChannel().ifPresent(jedis::clientSetname);
             VelocityPlugin.getInstance().getLogger().info("Connected to Redis");
@@ -110,7 +110,7 @@ public class RedisService extends AbstractService {
         }
         
         if (isRunning()) {
-            getScheduledTask().cancel();
+            getScheduledFuture().cancel(false);
         }
     }
     

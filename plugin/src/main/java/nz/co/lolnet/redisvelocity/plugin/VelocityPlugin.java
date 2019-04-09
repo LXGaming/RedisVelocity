@@ -79,6 +79,7 @@ public class VelocityPlugin {
     @Subscribe(order = PostOrder.LATE)
     public void onProxyShutdown(ProxyShutdownEvent event) {
         getRedisService().shutdown();
+        ServiceManager.shutdown();
         getLogger().info("{} v{} has shutdown", Reference.NAME, Reference.VERSION);
     }
     

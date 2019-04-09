@@ -18,6 +18,10 @@ package nz.co.lolnet.redisvelocity.plugin.util;
 
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,6 +109,17 @@ public class Toolbox {
         }
         
         return false;
+    }
+    
+    public static ThreadFactory buildThreadFactory(String namingPattern) {
+        return new ThreadFactoryBuilder().namingPattern(namingPattern).daemon(true).priority(Thread.NORM_PRIORITY).build();
+    }
+    
+    public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit) {
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(corePoolSize, buildThreadFactory("Service Thread #%d"));
+        scheduledThreadPoolExecutor.setMaximumPoolSize(maximumPoolSize);
+        scheduledThreadPoolExecutor.setKeepAliveTime(keepAliveTime, unit);
+        return scheduledThreadPoolExecutor;
     }
     
     public static <T> Optional<T> newInstance(Class<? extends T> typeOfT) {

@@ -16,32 +16,33 @@
 
 package nz.co.lolnet.redisvelocity.plugin.service;
 
-import com.velocitypowered.api.scheduler.ScheduledTask;
-import com.velocitypowered.api.scheduler.TaskStatus;
 import nz.co.lolnet.redisvelocity.plugin.VelocityPlugin;
+
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractService implements Runnable {
     
     private long delay;
     private long interval;
-    private ScheduledTask scheduledTask;
+    private ScheduledFuture scheduledFuture;
     
     @Override
     public final void run() {
         try {
-            executeService();
+            execute();
         } catch (Exception ex) {
             VelocityPlugin.getInstance().getLogger().error("Encountered an error while executing {}", getClass().getSimpleName(), ex);
-            getScheduledTask().cancel();
+            getScheduledFuture().cancel(false);
         }
     }
     
-    public abstract boolean prepareService();
+    public abstract boolean prepare();
     
-    public abstract void executeService() throws Exception;
+    public abstract void execute() throws Exception;
     
     public boolean isRunning() {
-        return getScheduledTask() != null && getScheduledTask().status() == TaskStatus.SCHEDULED;
+        return getScheduledFuture() != null && (!getScheduledFuture().isDone() || getScheduledFuture().getDelay(TimeUnit.MILLISECONDS) > 0L);
     }
     
     public final long getDelay() {
@@ -60,11 +61,11 @@ public abstract class AbstractService implements Runnable {
         this.interval = interval;
     }
     
-    public ScheduledTask getScheduledTask() {
-        return scheduledTask;
+    public ScheduledFuture getScheduledFuture() {
+        return scheduledFuture;
     }
     
-    public void setScheduledTask(ScheduledTask scheduledTask) {
-        this.scheduledTask = scheduledTask;
+    public void setScheduledFuture(ScheduledFuture scheduledFuture) {
+        this.scheduledFuture = scheduledFuture;
     }
 }
