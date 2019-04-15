@@ -4,7 +4,7 @@
 [![License](https://www.lolnet.co.nz/resources/badges/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ### API
-Repository: `https://api.lolnet.co.nz/maven`
+Repository: `https://repo.lolnet.co.nz/maven`
 
 Dependency: `nz.co.lolnet:redisvelocity-api:1.0.0-DEV`
 
