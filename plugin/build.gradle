@@ -16,7 +16,7 @@ apply plugin: "signing"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-group = "nz.co.lolnet"
+group = "io.github.lxgaming"
 archivesBaseName = "redisvelocity-plugin"
 version = version
 
@@ -58,9 +58,9 @@ task sourcesJar(type: Jar) {
 shadowJar {
     classifier = null
     configurations = [project.configurations.shadow]
-    relocate("org.apache.commons.pool2", "nz.co.lolnet.redisvelocity.lib.commonspool2")
-    relocate("redis.clients.jedis", "nz.co.lolnet.redisvelocity.lib.jedis")
-    relocate("redis.clients.util", "nz.co.lolnet.redisvelocity.lib.jedisutil")
+    relocate("org.apache.commons.pool2", "io.github.lxgaming.redisvelocity.lib.commonspool2")
+    relocate("redis.clients.jedis", "io.github.lxgaming.redisvelocity.lib.jedis")
+    relocate("redis.clients.util", "io.github.lxgaming.redisvelocity.lib.jedisutil")
 }
 
 jar {
@@ -99,14 +99,14 @@ uploadArchives {
                         packaging = "jar"
 
                         scm {
-                            url = "https://github.com/lolnetnz/RedisVelocity"
-                            connection = "scm:git:https://github.com/lolnetnz/RedisVelocity.git"
-                            developerConnection = "scm:git:git@github.com:lolnetnz/RedisVelocity.git"
+                            url = "https://github.com/LXGaming/RedisVelocity"
+                            connection = "scm:git:https://github.com/LXGaming/RedisVelocity.git"
+                            developerConnection = "scm:git:git@github.com:LXGaming/RedisVelocity.git"
                         }
 
                         issueManagement {
                             system = "GitHub Issues"
-                            url = "https://github.com/lolnetnz/RedisVelocity/issues"
+                            url = "https://github.com/LXGaming/RedisVelocity/issues"
                         }
 
                         licenses {
