@@ -1,17 +1,10 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath("com.github.jengelman.gradle.plugins:shadow:4.0.4")
-    }
+plugins {
+    id "com.github.johnrengelman.shadow" version "4.0.4"
+    id "com.jfrog.bintray" version "1.8.4"
+    id "java"
+    id "maven-publish"
+    id "signing"
 }
-
-apply plugin: "com.github.johnrengelman.shadow"
-apply plugin: "java"
-apply plugin: "maven"
-apply plugin: "signing"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -55,12 +48,34 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
-shadowJar {
-    classifier = null
-    configurations = [project.configurations.shadow]
-    relocate("org.apache.commons.pool2", "io.github.lxgaming.redisvelocity.lib.commonspool2")
-    relocate("redis.clients.jedis", "io.github.lxgaming.redisvelocity.lib.jedis")
-    relocate("redis.clients.util", "io.github.lxgaming.redisvelocity.lib.jedisutil")
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+bintray {
+    user = System.getenv("BINTRAY_USER")
+    key = System.getenv("BINTRAY_KEY")
+    publications = ["mavenPublication"]
+    pkg {
+        repo = "maven"
+        name = project.archivesBaseName
+        licenses = ["Apache-2.0"]
+        vcsUrl = "https://github.com/LXGaming/RedisVelocity.git"
+        publish = true
+        version {
+            name = project.version
+            released = new Date()
+        }
+    }
+}
+
+bintrayUpload {
+    onlyIf { System.getenv("BINTRAY_KEY") != null }
+    onlyIf { System.getenv("BINTRAY_USER") != null }
+    onlyIf { System.getenv("TRAVIS_BUILD_NUMBER") != null }
+    onlyIf { System.getenv("TRAVIS_JOB_NUMBER") ==~ /\d+\.1$/ }
+    onlyIf { System.getenv("TRAVIS_PULL_REQUEST") == "false" }
 }
 
 jar {
@@ -73,54 +88,34 @@ jar {
     }
 }
 
+javadoc {
+    failOnError = false
+}
+
 processResources {
     from("LICENSE")
     rename("LICENSE", "LICENSE-" + archivesBaseName)
 }
 
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-uploadArchives {
-    repositories {
-        if (project.hasProperty("maven.url")) {
-            mavenDeployer {
-                project.logger.lifecycle("Uploading Archives")
-                repository(url: project.property("maven.url"))
-
-                pom {
-                    groupId = project.group
-                    artifactId = project.archivesBaseName
-                    version = project.version
-                    project {
-                        name = project.archivesBaseName
-                        packaging = "jar"
-
-                        scm {
-                            url = "https://github.com/LXGaming/RedisVelocity"
-                            connection = "scm:git:https://github.com/LXGaming/RedisVelocity.git"
-                            developerConnection = "scm:git:git@github.com:LXGaming/RedisVelocity.git"
-                        }
-
-                        issueManagement {
-                            system = "GitHub Issues"
-                            url = "https://github.com/LXGaming/RedisVelocity/issues"
-                        }
-
-                        licenses {
-                            license {
-                                name = "Apache License 2.0"
-                                url = "https://opensource.org/licenses/Apache-2.0"
-                                distribution = "repo"
-                            }
-                        }
-                    }
-                }
-            }
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId archivesBaseName
+            version version
+            artifact javadocJar
+            artifact sourcesJar
         }
     }
+}
+
+shadowJar {
+    classifier = null
+    configurations = [project.configurations.shadow]
+    relocate("org.apache.commons.pool2", "io.github.lxgaming.redisvelocity.lib.commonspool2")
+    relocate("redis.clients.jedis", "io.github.lxgaming.redisvelocity.lib.jedis")
+    relocate("redis.clients.util", "io.github.lxgaming.redisvelocity.lib.jedisutil")
 }
 
 task signJar {
