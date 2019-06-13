@@ -59,7 +59,7 @@ bintray {
     publications = ["mavenPublication"]
     pkg {
         repo = "maven"
-        name = project.archivesBaseName
+        name = "RedisVelocity"
         licenses = ["Apache-2.0"]
         vcsUrl = "https://github.com/LXGaming/RedisVelocity.git"
         publish = true
