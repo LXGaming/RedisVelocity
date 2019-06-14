@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.8.4"
+    id "com.jfrog.bintray"
     id "java"
     id "maven-publish"
     id "signing"
