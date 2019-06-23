@@ -32,7 +32,9 @@ repositories {
 }
 
 dependencies {
-    shadow(project(path: ":api"))
+    shadow(project(path: ":api")) {
+        exclude(module: "slf4j-api")
+    }
     annotationProcessor("com.velocitypowered:velocity-api:1.0.0-SNAPSHOT")
     provided("com.velocitypowered:velocity-api:1.0.0-SNAPSHOT")
 }
