@@ -22,6 +22,10 @@ configurations {
 repositories {
     jcenter()
     maven {
+        name = "spongepowered"
+        url = "https://repo.spongepowered.org/maven"
+    }
+    maven {
         name = "velocity"
         url = "https://repo.velocitypowered.com/snapshots"
     }
@@ -31,8 +35,8 @@ dependencies {
     shadow(project(path: ":api")) {
         exclude(module: "slf4j-api")
     }
-    annotationProcessor("com.velocitypowered:velocity-api:1.0.0-SNAPSHOT")
-    provided("com.velocitypowered:velocity-api:1.0.0-SNAPSHOT")
+    annotationProcessor("com.velocitypowered:velocity-api:1.1.0-SNAPSHOT")
+    compile("com.velocitypowered:velocity-api:1.1.0-SNAPSHOT")
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {

@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    provided("redis.clients:jedis:3.0.1")
+    provided("redis.clients:jedis:3.3.0")
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
