@@ -18,9 +18,9 @@ package io.github.lxgaming.redisvelocity.plugin.util;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.permission.Tristate;
+import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
 import net.kyori.text.Component;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
-import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class RedisVelocityCommandSource implements CommandSource {

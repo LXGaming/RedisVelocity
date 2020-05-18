@@ -17,7 +17,6 @@
 package io.github.lxgaming.redisvelocity.plugin.util;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -122,11 +121,19 @@ public class Toolbox {
         return scheduledThreadPoolExecutor;
     }
     
-    public static <T> Optional<T> newInstance(Class<? extends T> typeOfT) {
+    public static String getClassSimpleName(Class<?> type) {
+        if (type.getEnclosingClass() != null) {
+            return getClassSimpleName(type.getEnclosingClass()) + "." + type.getSimpleName();
+        }
+        
+        return type.getSimpleName();
+    }
+    
+    public static <T> T newInstance(Class<? extends T> type) {
         try {
-            return Optional.of(typeOfT.newInstance());
-        } catch (Exception ex) {
-            return Optional.empty();
+            return type.newInstance();
+        } catch (Throwable ex) {
+            return null;
         }
     }
     

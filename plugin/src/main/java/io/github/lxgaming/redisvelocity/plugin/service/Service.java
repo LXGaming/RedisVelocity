@@ -17,22 +17,23 @@
 package io.github.lxgaming.redisvelocity.plugin.service;
 
 import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
+import io.github.lxgaming.redisvelocity.plugin.util.Toolbox;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractService implements Runnable {
+public abstract class Service implements Runnable {
     
     private long delay;
     private long interval;
-    private ScheduledFuture scheduledFuture;
+    private ScheduledFuture<?> scheduledFuture;
     
     @Override
     public final void run() {
         try {
             execute();
         } catch (Exception ex) {
-            VelocityPlugin.getInstance().getLogger().error("Encountered an error while executing {}", getClass().getSimpleName(), ex);
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while executing {}", Toolbox.getClassSimpleName(getClass()), ex);
             getScheduledFuture().cancel(false);
         }
     }
@@ -41,31 +42,27 @@ public abstract class AbstractService implements Runnable {
     
     public abstract void execute() throws Exception;
     
-    public boolean isRunning() {
-        return getScheduledFuture() != null && (!getScheduledFuture().isDone() || getScheduledFuture().getDelay(TimeUnit.MILLISECONDS) > 0L);
-    }
-    
     public final long getDelay() {
         return delay;
     }
     
-    protected final void setDelay(long delay) {
-        this.delay = delay;
+    protected final void delay(long delay, TimeUnit unit) {
+        this.delay = unit.toMillis(delay);
     }
     
     public final long getInterval() {
         return interval;
     }
     
-    protected final void setInterval(long interval) {
-        this.interval = interval;
+    protected final void interval(long interval, TimeUnit unit) {
+        this.interval = unit.toMillis(interval);
     }
     
-    public ScheduledFuture getScheduledFuture() {
+    public final ScheduledFuture<?> getScheduledFuture() {
         return scheduledFuture;
     }
     
-    public void setScheduledFuture(ScheduledFuture scheduledFuture) {
+    public final void setScheduledFuture(ScheduledFuture<?> scheduledFuture) {
         this.scheduledFuture = scheduledFuture;
     }
 }

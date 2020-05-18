@@ -38,7 +38,7 @@ public class RedisVelocityListener {
             }
             
             VelocityPlugin.getInstance().getLogger().info("Invoking command via RedisMessage: {}", message);
-            VelocityPlugin.getInstance().getProxy().getCommandManager().execute(new RedisVelocityCommandSource(), message);
+            VelocityPlugin.getInstance().getProxy().getCommandManager().executeAsync(new RedisVelocityCommandSource(), message);
         }
     }
 }

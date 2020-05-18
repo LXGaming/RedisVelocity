@@ -17,10 +17,9 @@
 package io.github.lxgaming.redisvelocity.plugin.manager;
 
 import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
-import io.github.lxgaming.redisvelocity.plugin.service.AbstractService;
+import io.github.lxgaming.redisvelocity.plugin.service.Service;
 import io.github.lxgaming.redisvelocity.plugin.util.Toolbox;
 
-import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -29,45 +28,52 @@ public final class ServiceManager {
     
     private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Toolbox.newScheduledThreadPool(1, 1, 60000L, TimeUnit.MILLISECONDS);
     
-    public static void schedule(AbstractService abstractService) {
+    public static void schedule(Service service) {
         try {
-            if (!abstractService.prepare()) {
-                throw new IllegalStateException("Service preparation failed");
+            if (!service.prepare()) {
+                VelocityPlugin.getInstance().getLogger().warn("{} failed to prepare", Toolbox.getClassSimpleName(service.getClass()));
+                return;
             }
-            
-            schedule(abstractService, abstractService.getDelay(), abstractService.getInterval()).ifPresent(abstractService::setScheduledFuture);
         } catch (Exception ex) {
-            VelocityPlugin.getInstance().getLogger().error("Encountered an error processing {}::schedule", "ServiceManager", ex);
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while preparing {}", Toolbox.getClassSimpleName(service.getClass()), ex);
+            return;
         }
+        
+        ScheduledFuture<?> scheduledFuture = schedule(service, service.getDelay(), service.getInterval());
+        service.setScheduledFuture(scheduledFuture);
     }
     
-    public static Optional<ScheduledFuture> schedule(Runnable runnable, long delay, long interval) {
+    public static ScheduledFuture<?> schedule(Runnable runnable) {
+        return schedule(runnable, 0L, 0L);
+    }
+    
+    public static ScheduledFuture<?> schedule(Runnable runnable, long delay, long interval) {
+        return schedule(runnable, delay, interval, TimeUnit.MILLISECONDS);
+    }
+    
+    public static ScheduledFuture<?> schedule(Runnable runnable, long delay, long interval, TimeUnit unit) {
         try {
             if (interval <= 0L) {
-                return Optional.of(getScheduledExecutorService().schedule(runnable, Math.max(delay, 0L), TimeUnit.MILLISECONDS));
+                return SCHEDULED_EXECUTOR_SERVICE.schedule(runnable, Math.max(delay, 0L), unit);
             }
             
-            return Optional.of(getScheduledExecutorService().scheduleWithFixedDelay(runnable, Math.max(delay, 0L), Math.max(interval, 0L), TimeUnit.MILLISECONDS));
+            return SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(runnable, Math.max(delay, 0L), Math.max(interval, 0L), unit);
         } catch (Exception ex) {
-            VelocityPlugin.getInstance().getLogger().error("Encountered an error processing {}::schedule", "ServiceManager", ex);
-            return Optional.empty();
+            VelocityPlugin.getInstance().getLogger().error("Encountered an error while scheduling service", ex);
+            return null;
         }
     }
     
     public static void shutdown() {
         try {
-            getScheduledExecutorService().shutdown();
-            if (!getScheduledExecutorService().awaitTermination(5000L, TimeUnit.MILLISECONDS)) {
+            SCHEDULED_EXECUTOR_SERVICE.shutdown();
+            if (!SCHEDULED_EXECUTOR_SERVICE.awaitTermination(5000L, TimeUnit.MILLISECONDS)) {
                 throw new InterruptedException();
             }
             
-            VelocityPlugin.getInstance().getLogger().info("Successfully terminated threads, continuing with shutdown process...");
+            VelocityPlugin.getInstance().getLogger().info("Successfully terminated service, continuing with shutdown process...");
         } catch (Exception ex) {
-            VelocityPlugin.getInstance().getLogger().error("Failed to terminate threads, continuing with shutdown process...");
+            VelocityPlugin.getInstance().getLogger().error("Failed to terminate service, continuing with shutdown process...");
         }
-    }
-    
-    private static ScheduledExecutorService getScheduledExecutorService() {
-        return SCHEDULED_EXECUTOR_SERVICE;
     }
 }

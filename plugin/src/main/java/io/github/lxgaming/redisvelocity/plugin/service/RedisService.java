@@ -30,7 +30,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.Set;
 
-public class RedisService extends AbstractService {
+public class RedisService extends Service {
     
     private final Set<String> channels = Toolbox.newHashSet();
     private final RedisListener redisListener = new RedisListener();
@@ -108,7 +108,7 @@ public class RedisService extends AbstractService {
             getJedisPool().close();
         }
         
-        if (isRunning()) {
+        if (getScheduledFuture() != null) {
             getScheduledFuture().cancel(false);
         }
     }
