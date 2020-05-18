@@ -14,10 +14,6 @@ archivesBaseName = "redisvelocity-plugin"
 version = version
 
 configurations {
-    provided {
-        compile.extendsFrom(provided)
-    }
-
     compileJava.dependsOn(":api:build")
     jar.enabled = false
     jar.dependsOn("shadowJar")
@@ -39,13 +35,13 @@ dependencies {
     provided("com.velocitypowered:velocity-api:1.0.0-SNAPSHOT")
 }
 
-task javadocJar(type: Jar) {
-    classifier = "javadoc"
-    from javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set("javadoc")
+    from javadoc.destinationDir
 }
 
-task sourcesJar(type: Jar) {
-    classifier = "sources"
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set("sources")
     from sourceSets.main.allSource
 }
 
@@ -79,23 +75,8 @@ bintrayUpload {
     onlyIf { System.getenv("TRAVIS_PULL_REQUEST") == "false" }
 }
 
-jar {
-    from {
-        (configurations.compile - configurations.provided).findAll({
-            it.isDirectory() || it.name.endsWith(".jar")
-        }).collect({
-            it.isDirectory() ? it : zipTree(it)
-        })
-    }
-}
-
 javadoc {
     failOnError = false
-}
-
-processResources {
-    from("LICENSE")
-    rename("LICENSE", "LICENSE-" + archivesBaseName)
 }
 
 publishing {
@@ -112,7 +93,7 @@ publishing {
 }
 
 shadowJar {
-    classifier = null
+    archiveClassifier.set(null)
     configurations = [project.configurations.shadow]
     relocate("org.apache.commons.pool2", "io.github.lxgaming.redisvelocity.lib.commonspool2")
     relocate("redis.clients.jedis", "io.github.lxgaming.redisvelocity.lib.jedis")
