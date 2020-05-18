@@ -25,7 +25,6 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import io.github.lxgaming.redisvelocity.api.RedisVelocity;
-import io.github.lxgaming.redisvelocity.api.util.Reference;
 import io.github.lxgaming.redisvelocity.plugin.configuration.Config;
 import io.github.lxgaming.redisvelocity.plugin.configuration.Configuration;
 import io.github.lxgaming.redisvelocity.plugin.listener.RedisVelocityListener;
@@ -37,12 +36,12 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 @Plugin(
-        id = Reference.ID,
-        name = Reference.NAME,
-        version = Reference.VERSION,
-        description = Reference.DESCRIPTION,
-        url = Reference.WEBSITE,
-        authors = {Reference.AUTHORS}
+        id = RedisVelocity.ID,
+        name = RedisVelocity.NAME,
+        version = RedisVelocity.VERSION,
+        description = RedisVelocity.DESCRIPTION,
+        url = RedisVelocity.WEBSITE,
+        authors = {RedisVelocity.AUTHORS}
 )
 public class VelocityPlugin {
     
@@ -73,14 +72,14 @@ public class VelocityPlugin {
         ServiceManager.schedule(getRedisService());
         getProxy().getEventManager().register(getInstance(), new RedisVelocityListener());
         getConfiguration().saveConfiguration();
-        getLogger().info("{} v{} has initialized", Reference.NAME, Reference.VERSION);
+        getLogger().info("{} v{} has initialized", RedisVelocity.NAME, RedisVelocity.VERSION);
     }
     
     @Subscribe(order = PostOrder.LATE)
     public void onProxyShutdown(ProxyShutdownEvent event) {
         getRedisService().shutdown();
         ServiceManager.shutdown();
-        getLogger().info("{} v{} has shutdown", Reference.NAME, Reference.VERSION);
+        getLogger().info("{} v{} has shutdown", RedisVelocity.NAME, RedisVelocity.VERSION);
     }
     
     public static VelocityPlugin getInstance() {

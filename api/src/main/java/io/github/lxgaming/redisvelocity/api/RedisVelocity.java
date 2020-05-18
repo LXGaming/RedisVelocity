@@ -16,11 +16,17 @@
 
 package io.github.lxgaming.redisvelocity.api;
 
-import io.github.lxgaming.redisvelocity.api.util.Reference;
-
 import java.util.Optional;
 
 public abstract class RedisVelocity {
+    
+    public static final String ID = "redisvelocity";
+    public static final String NAME = "RedisVelocity";
+    public static final String VERSION = "${version}";
+    public static final String DESCRIPTION = "Redis Velocity";
+    public static final String AUTHORS = "LX_Gaming";
+    public static final String SOURCE = "https://github.com/LXGaming/RedisVelocity";
+    public static final String WEBSITE = "https://lxgaming.github.io/";
     
     private static RedisVelocity instance;
     
@@ -59,7 +65,7 @@ public abstract class RedisVelocity {
      * @return The proxy channel, or {@link Optional#empty()} if unknown
      */
     public Optional<String> getProxyChannel() {
-        return getProxyId().map(id -> Reference.ID + "-" + id);
+        return getProxyId().map(id -> RedisVelocity.ID + "-" + id);
     }
     
     /**

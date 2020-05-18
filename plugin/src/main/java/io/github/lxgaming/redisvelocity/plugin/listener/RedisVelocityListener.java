@@ -19,7 +19,6 @@ package io.github.lxgaming.redisvelocity.plugin.listener;
 import com.velocitypowered.api.event.Subscribe;
 import io.github.lxgaming.redisvelocity.api.RedisVelocity;
 import io.github.lxgaming.redisvelocity.api.event.RedisMessageEvent;
-import io.github.lxgaming.redisvelocity.api.util.Reference;
 import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
 import io.github.lxgaming.redisvelocity.plugin.util.RedisVelocityCommandSource;
 import io.github.lxgaming.redisvelocity.plugin.util.Toolbox;
@@ -28,7 +27,7 @@ public class RedisVelocityListener {
     
     @Subscribe
     public void onRedisMessage(RedisMessageEvent event) {
-        if (event.getChannel().equals(Reference.ID + "-all") || RedisVelocity.getInstance().getProxyChannel().map(event.getChannel()::equals).orElse(false)) {
+        if (event.getChannel().equals(RedisVelocity.ID + "-all") || RedisVelocity.getInstance().getProxyChannel().map(event.getChannel()::equals).orElse(false)) {
             String message = event.getMessage();
             if (Toolbox.isBlank(message) || message.equals("/")) {
                 return;

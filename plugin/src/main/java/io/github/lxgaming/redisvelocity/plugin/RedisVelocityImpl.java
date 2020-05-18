@@ -17,7 +17,6 @@
 package io.github.lxgaming.redisvelocity.plugin;
 
 import io.github.lxgaming.redisvelocity.api.RedisVelocity;
-import io.github.lxgaming.redisvelocity.api.util.Reference;
 import io.github.lxgaming.redisvelocity.plugin.configuration.Config;
 import io.github.lxgaming.redisvelocity.plugin.util.Toolbox;
 
@@ -41,7 +40,7 @@ public final class RedisVelocityImpl extends RedisVelocity {
                 throw new IllegalArgumentException("Channel cannot be blank");
             }
             
-            if (Toolbox.containsIgnoreCase(channel, Reference.ID)) {
+            if (Toolbox.containsIgnoreCase(channel, RedisVelocity.ID)) {
                 throw new IllegalArgumentException("You cannot register a channel with the internal prefix");
             }
         }
@@ -56,7 +55,7 @@ public final class RedisVelocityImpl extends RedisVelocity {
                 throw new IllegalArgumentException("Channel cannot be blank");
             }
             
-            if (Toolbox.containsIgnoreCase(channel, Reference.ID)) {
+            if (Toolbox.containsIgnoreCase(channel, RedisVelocity.ID)) {
                 throw new IllegalArgumentException("You cannot unregister a channel with the internal prefix");
             }
         }

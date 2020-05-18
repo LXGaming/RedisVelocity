@@ -17,7 +17,6 @@
 package io.github.lxgaming.redisvelocity.plugin.service;
 
 import io.github.lxgaming.redisvelocity.api.RedisVelocity;
-import io.github.lxgaming.redisvelocity.api.util.Reference;
 import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
 import io.github.lxgaming.redisvelocity.plugin.configuration.Config;
 import io.github.lxgaming.redisvelocity.plugin.listener.RedisListener;
@@ -41,8 +40,8 @@ public class RedisService extends AbstractService {
     
     @Override
     public boolean prepare() {
-        getChannels().add(Reference.ID + "-all");
-        getChannels().add(Reference.ID + "-data");
+        getChannels().add(RedisVelocity.ID + "-all");
+        getChannels().add(RedisVelocity.ID + "-data");
         RedisVelocity.getInstance().getProxyChannel().ifPresent(getChannels()::add);
         
         VelocityPlugin.getInstance().getConfig().map(Config::getRedis).ifPresent(redis -> {
