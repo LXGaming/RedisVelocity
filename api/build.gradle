@@ -1,7 +1,7 @@
 plugins {
-    id "com.jfrog.bintray"
     id "java"
-    id "maven-publish"
+    id "net.kyori.blossom"
+    id "net.kyori.indra.publishing.sonatype"
 }
 
 sourceCompatibility = 1.8
@@ -11,63 +11,27 @@ group = "io.github.lxgaming"
 archivesBaseName = "redisvelocity-api"
 version = version
 
+blossom {
+    replaceToken("@version@", version)
+}
+
 configurations {
     provided {
         compile.extendsFrom(provided)
     }
-
-    compileJava.dependsOn("filterJava")
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     provided("redis.clients:jedis:3.5.1")
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier.set("javadoc")
-    from javadoc.destinationDir
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    archiveClassifier.set("sources")
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-bintray {
-    user = System.getenv("BINTRAY_USER")
-    key = System.getenv("BINTRAY_KEY")
-    publications = ["mavenPublication"]
-    pkg {
-        repo = "maven"
-        name = "RedisVelocity"
-        licenses = ["Apache-2.0"]
-        vcsUrl = "https://github.com/LXGaming/RedisVelocity.git"
-        publish = true
-        version {
-            name = project.version
-            released = new Date()
-        }
-    }
-}
-
-bintrayUpload {
-    onlyIf { System.getenv("BINTRAY_KEY") != null }
-    onlyIf { System.getenv("BINTRAY_USER") != null }
-}
-
-compileJava {
-    doFirst {
-        source = filterJava.outputs
-    }
+indra {
+    github("LXGaming", "RedisVelocity")
+    apache2License()
 }
 
 javadoc {
@@ -77,24 +41,4 @@ javadoc {
 processResources {
     from("../LICENSE")
     rename("LICENSE", "LICENSE-RedisVelocity")
-}
-
-publishing {
-    publications {
-        mavenPublication(MavenPublication) {
-            from components.java
-            groupId group
-            artifactId archivesBaseName
-            version version
-            artifact javadocJar
-            artifact sourcesJar
-        }
-    }
-}
-
-task filterJava(type: Sync) {
-    from(sourceSets.main.java)
-    into("$buildDir/tmp/$name")
-
-    expand(version: version)
 }

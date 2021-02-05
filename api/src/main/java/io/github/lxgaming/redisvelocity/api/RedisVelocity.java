@@ -22,7 +22,7 @@ public abstract class RedisVelocity {
     
     public static final String ID = "redisvelocity";
     public static final String NAME = "RedisVelocity";
-    public static final String VERSION = "${version}";
+    public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "Redis Velocity";
     public static final String AUTHORS = "LX_Gaming";
     public static final String SOURCE = "https://github.com/LXGaming/RedisVelocity";
