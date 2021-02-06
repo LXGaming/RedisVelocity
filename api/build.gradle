@@ -1,7 +1,8 @@
 plugins {
     id "java"
+    id "maven-publish"
     id "net.kyori.blossom"
-    id "net.kyori.indra.publishing.sonatype"
+    id "signing"
 }
 
 sourceCompatibility = 1.8
@@ -29,9 +30,19 @@ dependencies {
     provided("redis.clients:jedis:3.5.1")
 }
 
-indra {
-    github("LXGaming", "RedisVelocity")
-    apache2License()
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set("javadoc")
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set("sources")
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
 
 javadoc {
@@ -41,4 +52,59 @@ javadoc {
 processResources {
     from("../LICENSE")
     rename("LICENSE", "LICENSE-RedisVelocity")
+}
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            groupId group
+            artifactId archivesBaseName
+            version version
+            artifact javadocJar
+            artifact sourcesJar
+            pom {
+                name = "RedisVelocity"
+                description = "Jedis library adapter for Velocity"
+                url = "https://github.com/LXGaming/RedisVelocity"
+                developers {
+                    developer {
+                        id = "lxgaming"
+                        name = "LXGaming"
+                    }
+                }
+                issueManagement {
+                    system = "GitHub Issues"
+                    url = "https://github.com/LXGaming/RedisVelocity/issues"
+                }
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                scm {
+                    connection = "scm:git@github.com:LXGaming/RedisVelocity.git"
+                    developerConnection = "scm:git@github.com:LXGaming/RedisVelocity.git"
+                    url = "https://github.com/LXGaming/RedisVelocity"
+                }
+            }
+        }
+    }
+    repositories {
+        if (project.hasProperty("sonatype.username") && project.hasProperty("sonatype.password")) {
+            maven {
+                name = "sonatype"
+                url = version.contains("-SNAPSHOT") ? "https://oss.sonatype.org/content/repositories/snapshots" : "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                credentials {
+                    username project.property("sonatype.username")
+                    password project.property("sonatype.password")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications
 }
