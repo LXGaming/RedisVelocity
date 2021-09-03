@@ -1,2 +1,9 @@
 include "api"
 include "plugin"
+
+[
+    "api",
+    "plugin"
+].each {
+    findProject(":$it")?.name = "redisvelocity-$it"
+}
