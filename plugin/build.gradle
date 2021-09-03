@@ -1,36 +1,27 @@
 plugins {
     id "com.github.johnrengelman.shadow"
-    id "java"
-    id "signing"
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-group = "io.github.lxgaming"
 archivesBaseName = "redisvelocity-plugin"
-version = version
 
 configurations {
-    compileJava.dependsOn(":api:build")
-    build.dependsOn("signJar")
-    jar.enabled = false
-    jar.dependsOn("shadowJar")
 }
 
 repositories {
-    mavenCentral()
     maven {
         name = "minecraft"
         url = "https://libraries.minecraft.net"
     }
     maven {
         name = "spongepowered"
-        url = "https://repo.spongepowered.org/maven"
+        url = "https://repo.spongepowered.org/repository/maven-public"
     }
     maven {
         name = "velocity"
-        url = "https://repo.velocitypowered.com/snapshots"
+        url = "https://nexus.velocitypowered.com/repository/maven-public"
     }
 }
 
@@ -38,8 +29,21 @@ dependencies {
     shadow(project(path: ":api")) {
         exclude(module: "slf4j-api")
     }
-    annotationProcessor("com.velocitypowered:velocity-api:1.1.0-SNAPSHOT")
-    compile("com.velocitypowered:velocity-api:1.1.0-SNAPSHOT")
+    annotationProcessor("com.velocitypowered:velocity-api:3.0.1")
+    compileOnly("com.velocitypowered:velocity-api:3.0.1")
+}
+
+build {
+    dependsOn("signJar")
+}
+
+compileJava {
+    dependsOn(":api:build")
+}
+
+jar {
+    enabled = false
+    dependsOn("shadowJar")
 }
 
 shadowJar {
@@ -48,36 +52,4 @@ shadowJar {
     relocate("org.apache.commons.pool2", "io.github.lxgaming.redisvelocity.lib.commonspool2")
     relocate("redis.clients.jedis", "io.github.lxgaming.redisvelocity.lib.jedis")
     relocate("redis.clients.util", "io.github.lxgaming.redisvelocity.lib.jedisutil")
-}
-
-task signJar {
-    doFirst {
-        if (!project.hasProperty("signing.keyStorePath") || !project.hasProperty("signing.secretKeyRingFile")) {
-            project.logger.warn("========== [WARNING] ==========")
-            project.logger.warn("")
-            project.logger.warn("   This build is not signed!   ")
-            project.logger.warn("")
-            project.logger.warn("========== [WARNING] ==========")
-            throw new StopExecutionException()
-        }
-    }
-
-    doLast {
-        configurations.archives.allArtifacts.files.each {
-            ant.signjar(
-                jar: it,
-                alias: project.property("signing.alias"),
-                storepass: project.property("signing.keyStorePassword"),
-                keystore: project.property("signing.keyStorePath"),
-                keypass: project.property("signing.keyStorePassword"),
-                preservelastmodified: project.property("signing.preserveLastModified"),
-                tsaurl: project.property("signing.timestampAuthority"),
-                digestalg: project.property("signing.digestAlgorithm")
-            )
-            project.logger.lifecycle("JAR Signed: " + it.name)
-
-            signing.sign(it)
-            project.logger.lifecycle("PGP Signed: " + it.name)
-        }
-    }
 }

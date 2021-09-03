@@ -19,16 +19,15 @@ package io.github.lxgaming.redisvelocity.plugin.util;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.permission.Tristate;
 import io.github.lxgaming.redisvelocity.plugin.VelocityPlugin;
-import net.kyori.text.Component;
-import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class RedisVelocityCommandSource implements CommandSource {
     
-    @SuppressWarnings("deprecation")
     @Override
     public void sendMessage(@NonNull Component component) {
-        VelocityPlugin.getInstance().getLogger().info(LegacyComponentSerializer.INSTANCE.serialize(component));
+        VelocityPlugin.getInstance().getLogger().info(LegacyComponentSerializer.legacySection().serialize(component));
     }
     
     @Override

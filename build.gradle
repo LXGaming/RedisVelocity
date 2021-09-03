@@ -1,4 +1,97 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "6.1.0" apply false
-    id "net.kyori.blossom" version "1.1.0" apply false
+    id "com.github.johnrengelman.shadow" version "7.0.0" apply false
+    id "net.kyori.blossom" version "1.3.0" apply false
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "maven-publish"
+    apply plugin: "signing"
+
+    group = "io.github.lxgaming"
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    javadoc {
+        failOnError = false
+    }
+
+    publishing {
+        publications {
+            mavenPublication(MavenPublication) {
+                groupId group
+                artifactId archivesBaseName
+                version version
+                pom {
+                    name = "RedisVelocity"
+                    description = "Jedis library adapter for Velocity"
+                    url = "https://github.com/LXGaming/RedisVelocity"
+                    developers {
+                        developer {
+                            id = "lxgaming"
+                            name = "LXGaming"
+                        }
+                    }
+                    issueManagement {
+                        system = "GitHub Issues"
+                        url = "https://github.com/LXGaming/RedisVelocity/issues"
+                    }
+                    licenses {
+                        license {
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git@github.com:LXGaming/RedisVelocity.git"
+                        developerConnection = "scm:git@github.com:LXGaming/RedisVelocity.git"
+                        url = "https://github.com/LXGaming/RedisVelocity"
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications
+    }
+
+    task signJar {
+        doFirst {
+            if (!project.hasProperty("signing.keyStorePath") || !project.hasProperty("signing.secretKeyRingFile")) {
+                project.logger.warn("========== [WARNING] ==========")
+                project.logger.warn("")
+                project.logger.warn("   This build is not signed!   ")
+                project.logger.warn("")
+                project.logger.warn("========== [WARNING] ==========")
+                throw new StopExecutionException()
+            }
+        }
+
+        doLast {
+            configurations.archives.allArtifacts.files.each {
+                ant.signjar(
+                        jar: it,
+                        alias: project.property("signing.alias"),
+                        storepass: project.property("signing.keyStorePassword"),
+                        keystore: project.property("signing.keyStorePath"),
+                        keypass: project.property("signing.keyStorePassword"),
+                        preservelastmodified: project.property("signing.preserveLastModified"),
+                        tsaurl: project.property("signing.timestampAuthority"),
+                        digestalg: project.property("signing.digestAlgorithm")
+                )
+                project.logger.lifecycle("JAR Signed: " + it.name)
+
+                signing.sign(it)
+                project.logger.lifecycle("PGP Signed: " + it.name)
+            }
+        }
+    }
 }
