@@ -28,6 +28,11 @@ processResources {
 }
 
 publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+        }
+    }
     repositories {
         if (project.hasProperty("sonatype.username") && project.hasProperty("sonatype.password")) {
             maven {
