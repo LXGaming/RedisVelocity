@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    shadow(project(path: ":redisvelocity-api")) {
+    implementation(project(path: ":redisvelocity-api")) {
         exclude(module: "slf4j-api")
     }
     annotationProcessor("com.velocitypowered:velocity-api:3.0.1")
@@ -48,7 +48,6 @@ jar {
 
 shadowJar {
     archiveClassifier.set(null)
-    configurations = [project.configurations.shadow]
     relocate("org.apache.commons.pool2", "io.github.lxgaming.redisvelocity.lib.commonspool2")
     relocate("redis.clients.jedis", "io.github.lxgaming.redisvelocity.lib.jedis")
     relocate("redis.clients.util", "io.github.lxgaming.redisvelocity.lib.jedisutil")
