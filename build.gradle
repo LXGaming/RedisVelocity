@@ -50,8 +50,8 @@ subprojects {
                         }
                     }
                     scm {
-                        connection = "scm:git@github.com:LXGaming/RedisVelocity.git"
-                        developerConnection = "scm:git@github.com:LXGaming/RedisVelocity.git"
+                        connection = "scm:git:https://github.com/LXGaming/RedisVelocity.git"
+                        developerConnection = "scm:git:https://github.com/LXGaming/RedisVelocity.git"
                         url = "https://github.com/LXGaming/RedisVelocity"
                     }
                 }
