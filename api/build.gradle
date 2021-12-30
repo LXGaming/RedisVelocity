@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    api("redis.clients:jedis:3.7.0")
+    api("redis.clients:jedis:4.0.0")
 }
 
 processResources {
